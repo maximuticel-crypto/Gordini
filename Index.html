@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Presupuesto Gordini</title>
+<meta name="description" content="App de presupuestos de materiales eléctricos">
+<meta name="theme-color" content="#f5c800">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gordini">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #f5c800;
+    --gold-dim: #c9a200;
+    --bg: #0e0e0e;
+    --bg2: #161616;
+    --bg3: #1e1e1e;
+    --bg4: #272727;
+    --border: #2e2e2e;
+    --border-gold: #f5c80040;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --red: #e53935;
+    --green: #4caf50;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; font-size:14px; }
+  header { background:var(--bg2); border-bottom:2px solid var(--gold); padding:0 20px; display:flex; align-items:center; justify-content:space-between; height:60px; position:sticky; top:0; z-index:100; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:3px; color:var(--gold); line-height:1; }
+  .logo span { color:var(--text); font-size:11px; letter-spacing:1px; display:block; margin-top:-2px; }
+  .tabs { display:flex; background:var(--bg2); border-bottom:1px solid var(--border); padding:0 20px; gap:2px; }
+  .tab { padding:10px 18px; cursor:pointer; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); border-bottom:2px solid transparent; transition:all .2s; }
+  .tab.active { color:var(--gold); border-bottom-color:var(--gold); }
+  .tab:hover { color:var(--text); }
+  .section { display:none; padding:20px; max-width:960px; margin:0 auto; }
+  .section.active { display:block; }
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:18px; margin-bottom:16px; }
+  .card-title { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-gold); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  @media(max-width:600px) { .grid2,.grid3 { grid-template-columns:1fr; } }
+  label { display:block; font-size:11px; font-weight:600; letter-spacing:.5px; color:var(--text-dim); margin-bottom:4px; text-transform:uppercase; }
+  input, select, textarea { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:9px 12px; color:var(--text); font-family:'Barlow',sans-serif; font-size:14px; transition:border-color .2s; outline:none; }
+  input:focus, select:focus, textarea:focus { border-color:var(--gold); }
+  input[type="number"] { -moz-appearance:textfield; }
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; }
+  textarea { resize:vertical; min-height:70px; }
+  select option { background:var(--bg3); }
+  .btn { display:inline-flex; align-items:center; gap:7px; padding:10px 18px; border-radius:4px; border:none; cursor:pointer; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase; transition:all .2s; }
+  .btn-gold { background:var(--gold); color:#000; }
+  .btn-gold:hover { background:var(--gold-dim); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-dim); }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .btn-danger { background:transparent; border:1px solid #e5393540; color:var(--red); }
+  .btn-danger:hover { background:#e5393520; }
+  .btn-green { background:#1b5e20; color:#fff; border:1px solid #4caf5060; }
+  .btn-green:hover { background:#2e7d32; }
+  .btn-sm { padding:6px 12px; font-size:11px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .cat-header { background:var(--bg3); border:1px solid var(--border); border-left:3px solid var(--gold); padding:10px 14px; margin:14px 0 6px; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select:none; border-radius:3px; }
+  .cat-header:hover { background:var(--bg4); }
+  .mat-row { display:grid; grid-template-columns:1fr 90px 80px 32px; gap:8px; align-items:center; padding:7px 10px; background:var(--bg2); border:1px solid var(--border); border-radius:4px; margin-bottom:4px; transition:border-color .15s; }
+  .mat-row:hover { border-color:var(--border-gold); }
+  .mat-row.selected { border-color:var(--gold); background:#f5c80008; }
+  .mat-name { font-size:13px; color:var(--text); line-height:1.3; }
+  .mat-unit { font-size:11px; color:var(--text-dim); }
+  .mat-price-input { background:var(--bg3); border:1px solid var(--border); border-radius:3px; padding:5px 8px; color:var(--gold); font-size:13px; font-weight:600; text-align:right; outline:none; width:100%; }
+  .mat-price-input:focus { border-color:var(--gold); }
+  .mat-qty-input { background:var(--bg3); border:1px solid var(--border); border-radius:3px; padding:5px 6px; color:var(--text); font-size:13px; text-align:center; outline:none; width:100%; }
+  .mat-qty-input:focus { border-color:var(--gold); }
+  .add-btn { width:30px; height:30px; border-radius:3px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all .15s; flex-shrink:0; }
+  .add-btn:hover { border-color:var(--gold); color:var(--gold); background:#f5c80010; }
+  .add-btn.added { border-color:var(--green); color:var(--green); background:#4caf5010; }
+  .search-wrap { position:relative; margin-bottom:12px; }
+  .search-wrap input { padding-left:36px; }
+  .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:14px; }
+  .pres-item { display:grid; grid-template-columns:1fr 62px 85px 85px 28px; gap:8px; align-items:center; padding:8px 12px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; margin-bottom:4px; }
+  .pres-item:hover { border-color:var(--border-gold); }
+  .pres-name { font-size:13px; line-height:1.3; }
+  .pres-unit-price { text-align:right; color:var(--text-dim); font-size:12px; }
+  .pres-subtotal { text-align:right; font-weight:600; color:var(--gold); font-size:13px; }
+  .pres-del { background:transparent; border:none; color:#e5393580; cursor:pointer; font-size:15px; }
+  .pres-del:hover { color:var(--red); }
+  .total-bar { background:var(--bg3); border:1px solid var(--border); border-top:2px solid var(--gold); border-radius:4px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+  .total-label { font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:1px; color:var(--text-dim); text-transform:uppercase; }
+  .total-amount { font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--gold); letter-spacing:2px; }
+  .empty { text-align:center; padding:40px 20px; color:var(--text-dim); }
+  .empty-icon { font-size:40px; margin-bottom:10px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; background:#f5c80020; color:var(--gold); border:1px solid var(--border-gold); }
+  .col-labels { display:grid; grid-template-columns:1fr 62px 85px 85px 28px; gap:8px; padding:0 12px 6px; font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--text-dim); }
+  .col-right { text-align:right; }
+  .col-center { text-align:center; }
+  #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--bg3); border:1px solid var(--gold); color:var(--gold); padding:10px 20px; border-radius:4px; font-size:13px; font-weight:600; letter-spacing:.5px; z-index:9999; opacity:0; transition:opacity .3s; pointer-events:none; white-space:nowrap; }
+  #toast.show { opacity:1; }
+  .custom-mat-form { background:var(--bg3); border:1px solid var(--border); border-left:3px solid var(--gold-dim); border-radius:4px; padding:14px; margin-bottom:12px; display:none; }
+  .custom-mat-form.open { display:block; }
+  .adj-row { display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .adj-row input { max-width:80px; }
+  .adj-label { font-size:12px; color:var(--text-dim); white-space:nowrap; }
+  .mat-list { max-height:58vh; overflow-y:auto; padding-right:2px; }
+  .mat-list::-webkit-scrollbar { width:4px; }
+  .mat-list::-webkit-scrollbar-track { background:var(--bg3); }
+  .mat-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    Presupuesto Gordini
+    <span>Materiales Eléctricos</span>
+  </div>
+  <span id="itemCount" class="badge">0 items</span>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('materiales')">📦 Materiales</div>
+  <div class="tab" onclick="switchTab('presupuesto')">📋 Presupuesto</div>
+  <div class="tab" onclick="switchTab('config')">⚙️ Config</div>
+</div>
+
+<!-- MATERIALES -->
+<div id="tab-materiales" class="section active">
+  <div class="card">
+    <div class="card-title">Catálogo de materiales</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar material..." oninput="renderMateriales()">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:11px;color:var(--text-dim);">Ingresá el precio → cantidad → botón +</span>
+      <button class="btn btn-outline btn-sm" onclick="toggleCustomForm()">+ Personalizado</button>
+    </div>
+    <div class="custom-mat-form" id="customForm">
+      <div class="card-title" style="margin-bottom:10px;">Nuevo material personalizado</div>
+      <div class="grid3" style="margin-bottom:10px;">
+        <div><label>Nombre</label><input type="text" id="customName" placeholder="Ej: Cable 6mm²"></div>
+        <div><label>Unidad</label>
+          <select id="customUnit">
+            <option>m</option><option>un</option><option>rollo</option>
+            <option>caja</option><option>par</option><option>kg</option><option>gl</option>
+          </select>
+        </div>
+        <div><label>Precio ($)</label><input type="number" id="customPrice" placeholder="0.00" min="0" step="0.01"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-gold btn-sm" onclick="addCustomMaterial()">Agregar</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleCustomForm()">Cancelar</button>
+      </div>
+    </div>
+    <div class="mat-list" id="matList"></div>
+  </div>
+</div>
+
+<!-- PRESUPUESTO -->
+<div id="tab-presupuesto" class="section">
+  <div class="card">
+    <div class="card-title">Datos del cliente</div>
+    <div class="grid2">
+      <div><label>Nombre / Razón social</label><input type="text" id="clienteNombre" placeholder="Juan García"></div>
+      <div><label>Teléfono cliente</label><input type="text" id="clienteTel" placeholder="+54 9 223 XXXXXXX"></div>
+      <div><label>Dirección</label><input type="text" id="clienteDireccion" placeholder="Calle, número, piso"></div>
+      <div><label>Ciudad</label><input type="text" id="clienteCiudad" placeholder="Mar del Plata"></div>
+    </div>
+    <div style="margin-top:10px;"><label>Observaciones</label><textarea id="clienteNota" placeholder="Notas adicionales..."></textarea></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Items <span class="badge" id="presItemCount">0</span></div>
+    <div id="presEmpty" class="empty">
+      <div class="empty-icon">📦</div>
+      <div>Ningún material agregado.<br>Ir a <strong>Materiales</strong> para agregar.</div>
+    </div>
+    <div id="presItems" style="display:none;">
+      <div class="col-labels">
+        <div>Material</div><div class="col-center">Cant.</div>
+        <div class="col-right">P. Unit.</div><div class="col-right">Subtotal</div><div></div>
+      </div>
+      <div id="presItemsList"></div>
+    </div>
+    <div id="presTotal" style="display:none;">
+      <div class="adj-row">
+        <span class="adj-label">Descuento</span>
+        <input type="number" id="descuento" placeholder="0" min="0" max="100" oninput="calcTotal()">
+        <span class="adj-label">%</span>
+        <span class="adj-label" style="margin-left:10px;">Adicional</span>
+        <input type="number" id="adicional" placeholder="0" min="0" oninput="calcTotal()">
+        <span class="adj-label">$</span>
+      </div>
+      <div class="total-bar" style="margin-top:12px;">
+        <div>
+          <div class="total-label">Total</div>
+          <div id="subtotalLabel" style="font-size:11px;color:var(--text-dim);margin-top:2px;"></div>
+        </div>
+        <div class="total-amount" id="totalDisplay">$ 0,00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-gold" onclick="generarPDF()">🖨️ Generar PDF</button>
+    <button class="btn btn-green" onclick="compartirWhatsApp()">💬 WhatsApp</button>
+    <button class="btn btn-outline" onclick="limpiarPresupuesto()">🗑️ Limpiar</button>
+  </div>
+</div>
+
+<!-- CONFIG -->
+<div id="tab-config" class="section">
+  <div class="card">
+    <div class="card-title">Mis datos (vendedor)</div>
+    <div class="grid2">
+      <div><label>Nombre / Empresa</label><input type="text" id="cfgNombre" placeholder="Gordini Materiales Eléctricos"></div>
+      <div><label>Mi teléfono (WhatsApp)</label><input type="text" id="cfgTel" placeholder="+54 9 223 XXXXXXX"></div>
+      <div><label>Dirección</label><input type="text" id="cfgDireccion" placeholder="Calle, número"></div>
+      <div><label>Ciudad</label><input type="text" id="cfgCiudad" placeholder="Mar del Plata"></div>
+      <div><label>Email</label><input type="email" id="cfgEmail" placeholder="contacto@gordini.com"></div>
+      <div><label>CUIT</label><input type="text" id="cfgCuit" placeholder="20-XXXXXXXX-X"></div>
+    </div>
+    <div style="margin-top:10px;"><label>Texto al pie del PDF</label><textarea id="cfgPie" placeholder="Precios sujetos a variación. Validez 7 días."></textarea></div>
+    <div class="actions"><button class="btn btn-gold" onclick="saveConfig()">💾 Guardar</button></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Backup de precios</div>
+    <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Los precios se guardan automáticamente en el navegador. Podés exportarlos para hacer backup o pasarlos a otro dispositivo.</p>
+    <div class="actions">
+      <button class="btn btn-outline" onclick="exportarPrecios()">📤 Exportar precios</button>
+      <button class="btn btn-outline" onclick="document.getElementById('importInput').click()">📥 Importar precios</button>
+      <button class="btn btn-danger btn-sm" onclick="resetPrecios()">🗑️ Resetear precios</button>
+    </div>
+    <input type="file" id="importInput" accept=".json" style="display:none" onchange="importarPrecios(event)">
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const MATERIALES = [
+  {id:'c01',cat:'Cables',name:'Cable unipolar 1.5mm² blanco',unit:'m'},
+  {id:'c02',cat:'Cables',name:'Cable unipolar 1.5mm² negro',unit:'m'},
+  {id:'c03',cat:'Cables',name:'Cable unipolar 2.5mm² blanco',unit:'m'},
+  {id:'c04',cat:'Cables',name:'Cable unipolar 2.5mm² negro',unit:'m'},
+  {id:'c05',cat:'Cables',name:'Cable unipolar 4mm²',unit:'m'},
+  {id:'c06',cat:'Cables',name:'Cable unipolar 6mm²',unit:'m'},
+  {id:'c07',cat:'Cables',name:'Cable unipolar 10mm²',unit:'m'},
+  {id:'c08',cat:'Cables',name:'Cable unipolar 16mm²',unit:'m'},
+  {id:'c09',cat:'Cables',name:'Cable unipolar 25mm²',unit:'m'},
+  {id:'c10',cat:'Cables',name:'Cable unipolar 35mm²',unit:'m'},
+  {id:'c11',cat:'Cables',name:'Cable tierra verde/amarillo 2.5mm²',unit:'m'},
+  {id:'c12',cat:'Cables',name:'Cable tierra verde/amarillo 4mm²',unit:'m'},
+  {id:'c13',cat:'Cables',name:'Cable tierra verde/amarillo 6mm²',unit:'m'},
+  {id:'c14',cat:'Cables',name:'Cable TPR 2x1mm²',unit:'m'},
+  {id:'c15',cat:'Cables',name:'Cable TPR 2x1.5mm²',unit:'m'},
+  {id:'c16',cat:'Cables',name:'Cable TPR 2x2.5mm²',unit:'m'},
+  {id:'c17',cat:'Cables',name:'Cable TPR 3x1.5mm²',unit:'m'},
+  {id:'c18',cat:'Cables',name:'Cable TPR 3x2.5mm²',unit:'m'},
+  {id:'c19',cat:'Cables',name:'Cable VPVC 3x4mm²',unit:'m'},
+  {id:'c20',cat:'Cables',name:'Cable subterráneo 4x6mm²',unit:'m'},
+  {id:'c21',cat:'Cables',name:'Cable subterráneo 4x10mm²',unit:'m'},
+  {id:'ca01',cat:'Caños y Accesorios',name:'Caño corrugado Ø16mm',unit:'m'},
+  {id:'ca02',cat:'Caños y Accesorios',name:'Caño corrugado Ø20mm',unit:'m'},
+  {id:'ca03',cat:'Caños y Accesorios',name:'Caño corrugado Ø25mm',unit:'m'},
+  {id:'ca04',cat:'Caños y Accesorios',name:'Caño corrugado Ø32mm',unit:'m'},
+  {id:'ca05',cat:'Caños y Accesorios',name:'Caño rígido PVC Ø20mm',unit:'m'},
+  {id:'ca06',cat:'Caños y Accesorios',name:'Caño rígido PVC Ø25mm',unit:'m'},
+  {id:'ca07',cat:'Caños y Accesorios',name:'Caño rígido PVC Ø32mm',unit:'m'},
+  {id:'ca08',cat:'Caños y Accesorios',name:'Caño rígido PVC Ø40mm',unit:'m'},
+  {id:'ca09',cat:'Caños y Accesorios',name:'Caño rígido PVC Ø50mm',unit:'m'},
+  {id:'ca10',cat:'Caños y Accesorios',name:'Curva 90° PVC 20mm',unit:'un'},
+  {id:'ca11',cat:'Caños y Accesorios',name:'Curva 90° PVC 25mm',unit:'un'},
+  {id:'ca12',cat:'Caños y Accesorios',name:'Curva 90° PVC 32mm',unit:'un'},
+  {id:'ca13',cat:'Caños y Accesorios',name:'Unión PVC 20mm',unit:'un'},
+  {id:'ca14',cat:'Caños y Accesorios',name:'Unión PVC 25mm',unit:'un'},
+  {id:'ca15',cat:'Caños y Accesorios',name:'Terminal buje PVC 20mm',unit:'un'},
+  {id:'ca16',cat:'Caños y Accesorios',name:'Terminal buje PVC 25mm',unit:'un'},
+  {id:'ca17',cat:'Caños y Accesorios',name:'Grampa plástica 20mm',unit:'un'},
+  {id:'ca18',cat:'Caños y Accesorios',name:'Grampa plástica 25mm',unit:'un'},
+  {id:'ca19',cat:'Caños y Accesorios',name:'Curva flexible 20mm',unit:'un'},
+  {id:'ca20',cat:'Caños y Accesorios',name:'Bandeja portacables 50x50mm',unit:'m'},
+  {id:'ct01',cat:'Cajas y Tableros',name:'Caja octogonal plástica',unit:'un'},
+  {id:'ct02',cat:'Cajas y Tableros',name:'Caja rectangular plástica boca simple',unit:'un'},
+  {id:'ct03',cat:'Cajas y Tableros',name:'Caja cuadrada plástica 10x10cm',unit:'un'},
+  {id:'ct04',cat:'Cajas y Tableros',name:'Caja de paso plástica 20x20cm',unit:'un'},
+  {id:'ct05',cat:'Cajas y Tableros',name:'Caja de paso plástica 30x30cm',unit:'un'},
+  {id:'ct06',cat:'Cajas y Tableros',name:'Tablero metálico 24 bocas',unit:'un'},
+  {id:'ct07',cat:'Cajas y Tableros',name:'Tablero metálico 36 bocas',unit:'un'},
+  {id:'ct08',cat:'Cajas y Tableros',name:'Tablero metálico 48 bocas',unit:'un'},
+  {id:'ct09',cat:'Cajas y Tableros',name:'Tablero plástico exterior',unit:'un'},
+  {id:'ct10',cat:'Cajas y Tableros',name:'Riel DIN 1m',unit:'un'},
+  {id:'p01',cat:'Protecciones',name:'Disyuntor 1P 6A',unit:'un'},
+  {id:'p02',cat:'Protecciones',name:'Disyuntor 1P 10A',unit:'un'},
+  {id:'p03',cat:'Protecciones',name:'Disyuntor 1P 16A',unit:'un'},
+  {id:'p04',cat:'Protecciones',name:'Disyuntor 1P 20A',unit:'un'},
+  {id:'p05',cat:'Protecciones',name:'Disyuntor 1P 25A',unit:'un'},
+  {id:'p06',cat:'Protecciones',name:'Disyuntor 2P 16A',unit:'un'},
+  {id:'p07',cat:'Protecciones',name:'Disyuntor 2P 20A',unit:'un'},
+  {id:'p08',cat:'Protecciones',name:'Disyuntor 2P 25A',unit:'un'},
+  {id:'p09',cat:'Protecciones',name:'Disyuntor 2P 32A',unit:'un'},
+  {id:'p10',cat:'Protecciones',name:'Disyuntor 2P 40A',unit:'un'},
+  {id:'p11',cat:'Protecciones',name:'Disyuntor 2P 50A',unit:'un'},
+  {id:'p12',cat:'Protecciones',name:'Disyuntor 3P 25A',unit:'un'},
+  {id:'p13',cat:'Protecciones',name:'Disyuntor 3P 32A',unit:'un'},
+  {id:'p14',cat:'Protecciones',name:'Diferencial 2P 25A 30mA',unit:'un'},
+  {id:'p15',cat:'Protecciones',name:'Diferencial 2P 40A 30mA',unit:'un'},
+  {id:'p16',cat:'Protecciones',name:'Diferencial 2P 63A 30mA',unit:'un'},
+  {id:'p17',cat:'Protecciones',name:'Diferencial 4P 25A 30mA',unit:'un'},
+  {id:'p18',cat:'Protecciones',name:'Diferencial 4P 40A 30mA',unit:'un'},
+  {id:'p19',cat:'Protecciones',name:'Combinado diferencial 1P+N 16A',unit:'un'},
+  {id:'p20',cat:'Protecciones',name:'Combinado diferencial 1P+N 20A',unit:'un'},
+  {id:'p21',cat:'Protecciones',name:'Fusible NH 100A',unit:'un'},
+  {id:'p22',cat:'Protecciones',name:'Fusible NH 160A',unit:'un'},
+  {id:'p23',cat:'Protecciones',name:'Portafusible NH tipo 00',unit:'un'},
+  {id:'tl01',cat:'Tomas y Llaves',name:'Toma 2P+T schuko 10A',unit:'un'},
+  {id:'tl02',cat:'Tomas y Llaves',name:'Toma 2P+T 16A (IRAM 2073)',unit:'un'},
+  {id:'tl03',cat:'Tomas y Llaves',name:'Toma 2P+T 20A',unit:'un'},
+  {id:'tl04',cat:'Tomas y Llaves',name:'Llave interruptora simple',unit:'un'},
+  {id:'tl05',cat:'Tomas y Llaves',name:'Llave interruptora doble',unit:'un'},
+  {id:'tl06',cat:'Tomas y Llaves',name:'Llave interruptora triple',unit:'un'},
+  {id:'tl07',cat:'Tomas y Llaves',name:'Llave conmutadora simple',unit:'un'},
+  {id:'tl08',cat:'Tomas y Llaves',name:'Llave conmutadora doble',unit:'un'},
+  {id:'tl09',cat:'Tomas y Llaves',name:'Pulsador timbre',unit:'un'},
+  {id:'tl10',cat:'Tomas y Llaves',name:'Placa simple 1 módulo',unit:'un'},
+  {id:'tl11',cat:'Tomas y Llaves',name:'Placa doble 2 módulos',unit:'un'},
+  {id:'tl12',cat:'Tomas y Llaves',name:'Placa triple 3 módulos',unit:'un'},
+  {id:'tl13',cat:'Tomas y Llaves',name:'Toma TV coaxial',unit:'un'},
+  {id:'tl14',cat:'Tomas y Llaves',name:'Toma RJ45 cat.6',unit:'un'},
+  {id:'tl15',cat:'Tomas y Llaves',name:'Dimmer 500W',unit:'un'},
+  {id:'il01',cat:'Iluminación',name:'Lámpara LED bulbo 9W E27',unit:'un'},
+  {id:'il02',cat:'Iluminación',name:'Lámpara LED bulbo 12W E27',unit:'un'},
+  {id:'il03',cat:'Iluminación',name:'Lámpara LED dicroica MR16 5W',unit:'un'},
+  {id:'il04',cat:'Iluminación',name:'Downlight LED embutido 12W',unit:'un'},
+  {id:'il05',cat:'Iluminación',name:'Downlight LED embutido 18W',unit:'un'},
+  {id:'il06',cat:'Iluminación',name:'Tira LED RGB 5m',unit:'un'},
+  {id:'il07',cat:'Iluminación',name:'Aplique LED exterior IP65 12W',unit:'un'},
+  {id:'il08',cat:'Iluminación',name:'Lámpara tubular LED T8 18W 1.2m',unit:'un'},
+  {id:'il09',cat:'Iluminación',name:'Portalámpara E27 plástico',unit:'un'},
+  {id:'il10',cat:'Iluminación',name:'Portalámpara E27 PVC de caja',unit:'un'},
+  {id:'pt01',cat:'Puesta a Tierra',name:'Jabalina copperweld 1.5m Ø14mm',unit:'un'},
+  {id:'pt02',cat:'Puesta a Tierra',name:'Jabalina copperweld 3m Ø14mm',unit:'un'},
+  {id:'pt03',cat:'Puesta a Tierra',name:'Conductor PT 16mm²',unit:'m'},
+  {id:'pt04',cat:'Puesta a Tierra',name:'Terminal a compresión cable-jabalina',unit:'un'},
+  {id:'pt05',cat:'Puesta a Tierra',name:'Cámara de inspección plástica',unit:'un'},
+  {id:'pt06',cat:'Puesta a Tierra',name:'Bentonita 20kg',unit:'un'},
+  {id:'tc01',cat:'Terminales y Conexión',name:'Terminal punta perno 2.5mm²',unit:'un'},
+  {id:'tc02',cat:'Terminales y Conexión',name:'Terminal punta perno 6mm²',unit:'un'},
+  {id:'tc03',cat:'Terminales y Conexión',name:'Terminal punta perno 10mm²',unit:'un'},
+  {id:'tc04',cat:'Terminales y Conexión',name:'Terminal punta perno 16mm²',unit:'un'},
+  {id:'tc05',cat:'Terminales y Conexión',name:'Terminal punta perno 25mm²',unit:'un'},
+  {id:'tc06',cat:'Terminales y Conexión',name:'Conector Wago 2 pines',unit:'un'},
+  {id:'tc07',cat:'Terminales y Conexión',name:'Conector Wago 3 pines',unit:'un'},
+  {id:'tc08',cat:'Terminales y Conexión',name:'Conector Wago 5 pines',unit:'un'},
+  {id:'tc09',cat:'Terminales y Conexión',name:'Bornera DIN 4mm²',unit:'un'},
+  {id:'tc10',cat:'Terminales y Conexión',name:'Cinta autofundente 19mm',unit:'un'},
+  {id:'tc11',cat:'Terminales y Conexión',name:'Cinta aisladora (rollo)',unit:'un'},
+  {id:'tc12',cat:'Terminales y Conexión',name:'Termocontraíble surtido',unit:'un'},
+  {id:'tc13',cat:'Terminales y Conexión',name:'Prensacable nylon PG11',unit:'un'},
+  {id:'tc14',cat:'Terminales y Conexión',name:'Prensacable nylon PG16',unit:'un'},
+  {id:'tc15',cat:'Terminales y Conexión',name:'Prensacable nylon PG21',unit:'un'},
+  {id:'ma01',cat:'Materiales Auxiliares',name:'Tarugo plástico 8mm (x100)',unit:'caja'},
+  {id:'ma02',cat:'Materiales Auxiliares',name:'Tornillo 6x35mm (x100)',unit:'caja'},
+  {id:'ma03',cat:'Materiales Auxiliares',name:'Tornillo 4x25mm (x100)',unit:'caja'},
+  {id:'ma04',cat:'Materiales Auxiliares',name:'Varilla roscada M8 1m',unit:'un'},
+  {id:'ma05',cat:'Materiales Auxiliares',name:'Espiral plástica 10mm',unit:'m'},
+  {id:'ma06',cat:'Materiales Auxiliares',name:'Brida nylon 200mm (x100)',unit:'caja'},
+  {id:'ma07',cat:'Materiales Auxiliares',name:'Brida nylon 300mm (x100)',unit:'caja'},
+  {id:'ma08',cat:'Materiales Auxiliares',name:'Sellador siliconado',unit:'un'},
+  {id:'ma09',cat:'Materiales Auxiliares',name:'Spray lubricante WD-40',unit:'un'},
+  {id:'ma10',cat:'Materiales Auxiliares',name:'Cable duct ranurado 40x40mm',unit:'m'},
+];
+
+let presupuesto = [];
+let customMaterials = [];
+let precios = {};
+let config = {};
+let openCats = new Set();
+
+function loadData() {
+  try {
+    const p = localStorage.getItem('gordini_precios');
+    if (p) precios = JSON.parse(p);
+    const c = localStorage.getItem('gordini_config');
+    if (c) { config = JSON.parse(c); applyConfig(); }
+    const cm = localStorage.getItem('gordini_custom');
+    if (cm) customMaterials = JSON.parse(cm);
+  } catch(e) {}
+}
+
+function applyConfig() {
+  ['nombre','tel','direccion','ciudad','email','cuit','pie'].forEach(k => {
+    if (config[k]) { const el = document.getElementById('cfg'+k.charAt(0).toUpperCase()+k.slice(1)); if (el) el.value = config[k]; }
+  });
+}
+
+function saveConfig() {
+  config = {
+    nombre: document.getElementById('cfgNombre').value,
+    tel: document.getElementById('cfgTel').value,
+    direccion: document.getElementById('cfgDireccion').value,
+    ciudad: document.getElementById('cfgCiudad').value,
+    email: document.getElementById('cfgEmail').value,
+    cuit: document.getElementById('cfgCuit').value,
+    pie: document.getElementById('cfgPie').value,
+  };
+  localStorage.setItem('gordini_config', JSON.stringify(config));
+  showToast('✅ Configuración guardada');
+}
+
+function savePrecios() { localStorage.setItem('gordini_precios', JSON.stringify(precios)); }
+function saveCustom() { localStorage.setItem('gordini_custom', JSON.stringify(customMaterials)); }
+
+function getAllMaterials() { return [...MATERIALES, ...customMaterials]; }
+
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (tab === 'presupuesto') renderPresupuesto();
+}
+
+function renderMateriales() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const all = getAllMaterials();
+  const filtered = q ? all.filter(m => m.name.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q)) : all;
+  const cats = [...new Set(filtered.map(m => m.cat))];
+  // Si hay búsqueda, abrir solo categorías con resultados automáticamente
+  if (q) cats.forEach(cat => openCats.add(cat));
+  let html = '';
+  cats.forEach(cat => {
+    const items = filtered.filter(m => m.cat === cat);
+    const catId = 'cat_' + cat.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+    const isOpen = openCats.has(cat);
+    html += `<div class="cat-header" onclick="toggleCat('${cat}','${catId}')">
+      <span>${isOpen ? '📂' : '📁'} ${cat}</span>
+      <span style="font-size:11px;color:var(--text-dim)">${items.length} ${isOpen ? '▲' : '▼'}</span>
+    </div><div id="${catId}" style="display:${isOpen?'block':'none'}">`;
+    items.forEach(m => {
+      const price = precios[m.id] !== undefined ? precios[m.id] : '';
+      const inPres = presupuesto.some(p => p.id === m.id);
+      html += `<div class="mat-row${inPres?' selected':''}">
+        <div><div class="mat-name">${m.name}</div><div class="mat-unit">${m.unit}</div></div>
+        <div style="display:flex;align-items:center;gap:3px;">
+          <span style="font-size:11px;color:var(--text-dim)">$</span>
+          <input class="mat-price-input" type="number" min="0" step="0.01" value="${price}" placeholder="0.00"
+            onchange="setPrice('${m.id}',this.value)">
+        </div>
+        <input class="mat-qty-input" type="number" min="1" step="1" value="1" id="qty_${m.id}" placeholder="1">
+        <button class="add-btn${inPres?' added':''}" onclick="toggleItem('${m.id}')">${inPres?'✓':'+'}</button>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  if (!html) html = '<div class="empty"><div class="empty-icon">🔍</div><div>Sin resultados</div></div>';
+  document.getElementById('matList').innerHTML = html;
+}
+
+function toggleCat(cat, catId) {
+  const el = document.getElementById(catId);
+  if (!el) return;
+  const isNowOpen = el.style.display === 'none';
+  el.style.display = isNowOpen ? 'block' : 'none';
+  if (isNowOpen) openCats.add(cat); else openCats.delete(cat);
+  // Actualizar ícono del header sin re-renderizar
+  const header = el.previousElementSibling;
+  if (header) {
+    const span = header.querySelector('span:first-child');
+    const cnt = header.querySelector('span:last-child');
+    if (span) span.textContent = (isNowOpen ? '📂 ' : '📁 ') + cat;
+    if (cnt) cnt.textContent = el.querySelectorAll('.mat-row').length + (isNowOpen ? ' ▲' : ' ▼');
+  }
+}
+
+function setPrice(id, val) {
+  precios[id] = parseFloat(val) || 0;
+  savePrecios();
+}
+
+function toggleItem(id) {
+  const mat = getAllMaterials().find(m => m.id === id);
+  if (!mat) return;
+  const qtyEl = document.getElementById('qty_' + id);
+  const qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
+  const price = precios[id] || 0;
+  const idx = presupuesto.findIndex(p => p.id === id);
+  if (idx >= 0) { presupuesto.splice(idx, 1); showToast('➖ Quitado'); }
+  else { presupuesto.push({id, name:mat.name, unit:mat.unit, qty, price}); showToast('✅ Agregado'); }
+  updateBadge();
+  // Actualizar solo la fila afectada sin re-renderizar todo
+  const inPres = presupuesto.some(p => p.id === id);
+  const row = qtyEl ? qtyEl.closest('.mat-row') : null;
+  const btn = row ? row.querySelector('.add-btn') : null;
+  if (row) { row.classList.toggle('selected', inPres); }
+  if (btn) { btn.textContent = inPres ? '✓' : '+'; btn.classList.toggle('added', inPres); }
+}
+
+function updateBadge() { document.getElementById('itemCount').textContent = presupuesto.length + ' items'; }
+
+function renderPresupuesto() {
+  const empty = document.getElementById('presEmpty');
+  const itemsDiv = document.getElementById('presItems');
+  const totalDiv = document.getElementById('presTotal');
+  document.getElementById('presItemCount').textContent = presupuesto.length;
+  if (!presupuesto.length) {
+    empty.style.display = 'block'; itemsDiv.style.display = 'none'; totalDiv.style.display = 'none'; return;
+  }
+  empty.style.display = 'none'; itemsDiv.style.display = 'block'; totalDiv.style.display = 'block';
+  let html = '';
+  presupuesto.forEach((item, i) => {
+    const sub = item.qty * item.price;
+    html += `<div class="pres-item">
+      <div><div class="pres-name">${item.name}</div><div style="font-size:11px;color:var(--text-dim)">${item.unit}</div></div>
+      <div style="text-align:center">
+        <input class="mat-qty-input" style="width:52px" type="number" min="1" value="${item.qty}" onchange="updateQty(${i},this.value)">
+      </div>
+      <div class="pres-unit-price">$ ${fmt(item.price)}</div>
+      <div class="pres-subtotal">$ ${fmt(sub)}</div>
+      <button class="pres-del" onclick="removeItem(${i})">✕</button>
+    </div>`;
+  });
+  document.getElementById('presItemsList').innerHTML = html;
+  calcTotal();
+}
+
+function updateQty(i, val) { presupuesto[i].qty = parseInt(val)||1; calcTotal(); }
+
+function removeItem(i) { presupuesto.splice(i,1); updateBadge(); renderPresupuesto(); }
+
+function calcTotal() {
+  const sub = presupuesto.reduce((a,i) => a + i.qty*i.price, 0);
+  const desc = parseFloat(document.getElementById('descuento').value)||0;
+  const adic = parseFloat(document.getElementById('adicional').value)||0;
+  const descVal = sub*desc/100;
+  const total = sub - descVal + adic;
+  document.getElementById('totalDisplay').textContent = '$ ' + fmt(total);
+  let label = '';
+  if (desc) label += `Sub $${fmt(sub)} — Desc ${desc}% -$${fmt(descVal)} `;
+  if (adic) label += `+ Adic $${fmt(adic)}`;
+  document.getElementById('subtotalLabel').textContent = label;
+}
+
+function limpiarPresupuesto() {
+  if (!confirm('¿Limpiar todo el presupuesto?')) return;
+  presupuesto = []; updateBadge(); renderPresupuesto(); renderMateriales();
+}
+
+function toggleCustomForm() { document.getElementById('customForm').classList.toggle('open'); }
+
+function addCustomMaterial() {
+  const name = document.getElementById('customName').value.trim();
+  if (!name) { showToast('⚠️ Falta el nombre'); return; }
+  const unit = document.getElementById('customUnit').value;
+  const price = parseFloat(document.getElementById('customPrice').value)||0;
+  const id = 'cust_'+Date.now();
+  customMaterials.push({id, cat:'Personalizados', name, unit});
+  precios[id] = price;
+  saveCustom(); savePrecios();
+  document.getElementById('customName').value = '';
+  document.getElementById('customPrice').value = '';
+  toggleCustomForm(); renderMateriales();
+  showToast('✅ Material agregado');
+}
+
+function generarPDF() {
+  if (!presupuesto.length) { showToast('⚠️ Presupuesto vacío'); return; }
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:'mm',format:'a4'});
+  const W=210, H=297, M=15;
+  let y = M;
+  const fecha = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const nro = 'P-'+Date.now().toString().slice(-6);
+
+  // Header
+  doc.setFillColor(15,15,15); doc.rect(0,0,W,38,'F');
+  doc.setFillColor(245,200,0); doc.rect(0,38,W,2,'F');
+  doc.setTextColor(245,200,0); doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text('PRESUPUESTO GORDINI', M, 17);
+  doc.setTextColor(190,190,190); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Materiales Eléctricos', M, 24);
+
+  const cfg = config;
+  const vlines = [cfg.nombre||'Gordini Materiales',cfg.direccion,cfg.ciudad,cfg.tel?'Tel: '+cfg.tel:'',cfg.email,cfg.cuit?'CUIT: '+cfg.cuit:''].filter(Boolean);
+  doc.setTextColor(190,190,190); doc.setFontSize(8);
+  let vy=10; vlines.forEach(l=>{doc.text(l,W-M,vy,{align:'right'});vy+=5;});
+
+  y=48;
+  doc.setFillColor(240,240,240); doc.rect(M,y,W-M*2,12,'F');
+  doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('N° '+nro, M+4, y+8);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Fecha: '+fecha, W-M-4, y+8, {align:'right'});
+  y+=18;
+
+  const cn=document.getElementById('clienteNombre').value;
+  const ct=document.getElementById('clienteTel').value;
+  const cd=document.getElementById('clienteDireccion').value;
+  const cc=document.getElementById('clienteCiudad').value;
+  const nota=document.getElementById('clienteNota').value;
+
+  if (cn||cd) {
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(120,120,120);
+    doc.text('CLIENTE', M, y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(20,20,20);
+    if (cn) {doc.text(cn,M,y);y+=5;}
+    if (ct) {doc.text('Tel: '+ct,M,y);y+=5;}
+    if (cd) {doc.text(cd+(cc?', '+cc:''),M,y);y+=5;}
+    y+=3;
+  }
+
+  // Table header
+  doc.setFillColor(15,15,15); doc.rect(M,y,W-M*2,8,'F');
+  doc.setTextColor(245,200,0); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('MATERIAL', M+3, y+5.5);
+  doc.text('UND', M+90, y+5.5, {align:'right'});
+  doc.text('CANT.', M+115, y+5.5, {align:'right'});
+  doc.text('P.UNIT.', M+148, y+5.5, {align:'right'});
+  doc.text('SUBTOTAL', W-M-3, y+5.5, {align:'right'});
+  y+=10;
+
+  let subtotal=0;
+  presupuesto.forEach((item,i)=>{
+    if (y>H-50) {doc.addPage();y=M;}
+    const sub=item.qty*item.price; subtotal+=sub;
+    doc.setFillColor(i%2===0?248:255,i%2===0?248:255,i%2===0?248:255);
+    doc.rect(M,y-1,W-M*2,8,'F');
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    let n=item.name; if(n.length>52) n=n.slice(0,49)+'...';
+    doc.text(n, M+3, y+5);
+    doc.text(item.unit, M+90, y+5, {align:'right'});
+    doc.text(String(item.qty), M+115, y+5, {align:'right'});
+    doc.text('$'+fmt(item.price), M+148, y+5, {align:'right'});
+    doc.setFont('helvetica','bold');
+    doc.text('$'+fmt(sub), W-M-3, y+5, {align:'right'});
+    y+=9;
+  });
+
+  const desc=parseFloat(document.getElementById('descuento').value)||0;
+  const adic=parseFloat(document.getElementById('adicional').value)||0;
+  const descVal=subtotal*desc/100;
+  const total=subtotal-descVal+adic;
+
+  y+=4;
+  doc.setFillColor(220,220,220); doc.rect(M,y,W-M*2,0.5,'F'); y+=5;
+  if (desc) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(80,80,80);
+    doc.text('Subtotal',W-M-3-40,y+5,{align:'right'}); doc.text('$'+fmt(subtotal),W-M-3,y+5,{align:'right'}); y+=8;
+    doc.text('Descuento ('+desc+'%)',W-M-3-40,y+5,{align:'right'}); doc.setTextColor(180,0,0); doc.text('-$'+fmt(descVal),W-M-3,y+5,{align:'right'}); y+=8;
+  }
+  if (adic) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(80,80,80);
+    doc.text('Adicional',W-M-3-40,y+5,{align:'right'}); doc.text('+$'+fmt(adic),W-M-3,y+5,{align:'right'}); y+=8;
+  }
+
+  doc.setFillColor(15,15,15); doc.rect(M,y,W-M*2,13,'F');
+  doc.setTextColor(245,200,0); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text('TOTAL', M+4, y+9);
+  doc.text('$ '+fmt(total), W-M-4, y+9, {align:'right'});
+  y+=18;
+
+  if (nota) {
+    doc.setTextColor(80,80,80); doc.setFont('helvetica','italic'); doc.setFontSize(8);
+    const ls=doc.splitTextToSize('Obs: '+nota,W-M*2);
+    doc.text(ls,M,y); y+=ls.length*5+4;
+  }
+
+  const pie=config.pie||'Precios sujetos a variación. Validez del presupuesto: 7 días.';
+  doc.setFillColor(245,200,0); doc.rect(0,H-14,W,14,'F');
+  doc.setTextColor(20,20,20); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.text(pie, W/2, H-7, {align:'center'});
+
+  doc.save('Presupuesto-Gordini-'+nro+'.pdf');
+  showToast('✅ PDF descargado');
+}
+
+function compartirWhatsApp() {
+  if (!presupuesto.length) { showToast('⚠️ Presupuesto vacío'); return; }
+  const cfg = config;
+  const cNombre = document.getElementById('clienteNombre').value;
+  const desc = parseFloat(document.getElementById('descuento').value)||0;
+  const adic = parseFloat(document.getElementById('adicional').value)||0;
+  const sub = presupuesto.reduce((a,i)=>a+i.qty*i.price,0);
+  const descVal = sub*desc/100;
+  const total = sub-descVal+adic;
+  const fecha = new Date().toLocaleDateString('es-AR');
+
+  let msg = '*PRESUPUESTO GORDINI - Materiales Eléctricos*\n';
+  msg += '📅 '+fecha+'\n';
+  if (cNombre) msg += '👤 '+cNombre+'\n';
+  msg += '\n*DETALLE:*\n──────────────\n';
+  presupuesto.forEach(item=>{
+    msg += '▪ '+item.name+'\n';
+    msg += '  '+item.qty+' '+item.unit+' × $'+fmt(item.price)+' = *$'+fmt(item.qty*item.price)+'*\n';
+  });
+  msg += '──────────────\n';
+  if (desc) msg += 'Subtotal: $'+fmt(sub)+'\nDesc ('+desc+'%): -$'+fmt(descVal)+'\n';
+  if (adic) msg += 'Adicional: +$'+fmt(adic)+'\n';
+  msg += '\n💰 *TOTAL: $'+fmt(total)+'*\n';
+  if (cfg.pie) msg += '\n_'+cfg.pie+'_\n';
+  if (cfg.nombre) msg += '\n'+cfg.nombre;
+  if (cfg.tel) msg += ' | '+cfg.tel;
+
+  const tel = (cfg.tel||'').replace(/\D/g,'');
+  const url = tel ? 'https://wa.me/'+tel+'?text='+encodeURIComponent(msg) : 'https://wa.me/?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+}
+
+function exportarPrecios() {
+  const blob = new Blob([JSON.stringify({precios,customMaterials},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'gordini-precios.json'; a.click();
+  showToast('✅ Exportado');
+}
+
+function importarPrecios(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if (d.precios) { precios=d.precios; savePrecios(); }
+      if (d.customMaterials) { customMaterials=d.customMaterials; saveCustom(); }
+      renderMateriales(); showToast('✅ Importado');
+    } catch { showToast('❌ Archivo inválido'); }
+  };
+  r.readAsText(file); e.target.value='';
+}
+
+function resetPrecios() {
+  if (!confirm('¿Resetear todos los precios?')) return;
+  precios={}; savePrecios(); renderMateriales(); showToast('🗑️ Precios reseteados');
+}
+
+function fmt(n) { return parseFloat(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+loadData();
+renderMateriales();
+
+// Registrar Service Worker para PWA/offline
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

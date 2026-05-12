@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instrucciones APK - Presupuesto Gordini</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --gold:#f5c800; --bg:#0e0e0e; --bg2:#161616; --bg3:#1e1e1e; --border:#2e2e2e; --text:#e8e8e8; --text-dim:#888; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; padding:30px 20px; max-width:700px; margin:0 auto; }
+  h1 { font-family:'Bebas Neue',sans-serif; color:var(--gold); font-size:32px; letter-spacing:3px; margin-bottom:4px; }
+  .sub { color:var(--text-dim); font-size:13px; margin-bottom:30px; }
+  .step { background:var(--bg2); border:1px solid var(--border); border-left:4px solid var(--gold); border-radius:6px; padding:20px; margin-bottom:16px; }
+  .step-num { font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--gold); line-height:1; float:left; margin-right:14px; }
+  .step-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .step-body { font-size:13px; color:var(--text-dim); line-height:1.7; }
+  .step-body strong { color:var(--text); }
+  code { background:var(--bg3); border:1px solid var(--border); padding:2px 7px; border-radius:3px; font-size:12px; color:var(--gold); font-family:monospace; }
+  .files-list { background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:14px; margin:10px 0; }
+  .files-list div { padding:4px 0; font-size:13px; }
+  .files-list span { color:var(--gold); margin-right:8px; }
+  .tip { background:#f5c80010; border:1px solid #f5c80030; border-radius:4px; padding:12px 14px; margin:10px 0; font-size:12px; color:#f5c800cc; }
+  .tip strong { color:var(--gold); }
+  a { color:var(--gold); }
+  hr { border:none; border-top:1px solid var(--border); margin:20px 0; }
+  .badge { display:inline-block; background:var(--gold); color:#000; padding:2px 10px; border-radius:3px; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<h1>🔌 Instrucciones APK</h1>
+<p class="sub">Presupuesto Gordini — Cómo instalar en tu celular Android</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div>
+    <div class="step-title">Archivos que descargaste</div>
+    <div class="step-body">
+      Deberías tener estos 5 archivos descargados en tu PC:
+      <div class="files-list">
+        <div><span>📄</span><code>index.html</code> — la app (renombrá el archivo a index.html)</div>
+        <div><span>📄</span><code>manifest.json</code> — configuración PWA</div>
+        <div><span>📄</span><code>sw.js</code> — service worker (offline)</div>
+        <div><span>🖼️</span><code>icon-192.png</code> — ícono app</div>
+        <div><span>🖼️</span><code>icon-512.png</code> — ícono app grande</div>
+      </div>
+      <strong>Importante:</strong> renombrá el archivo HTML a <code>index.html</code>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">2</div>
+  <div>
+    <div class="step-title">Crear cuenta en GitHub (gratis)</div>
+    <div class="step-body">
+      1. Ir a <strong>github.com</strong> → "Sign up"<br>
+      2. Crear cuenta con tu email<br>
+      3. Una vez adentro, click en <strong>"New repository"</strong> (botón verde o el +)<br>
+      4. Nombre del repo: <code>gordini</code><br>
+      5. Marcarlo como <strong>Public</strong><br>
+      6. Tildar <strong>"Add a README file"</strong><br>
+      7. Click <strong>"Create repository"</strong>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">3</div>
+  <div>
+    <div class="step-title">Subir los 5 archivos a GitHub</div>
+    <div class="step-body">
+      1. Dentro del repo recién creado, click en <strong>"Add file" → "Upload files"</strong><br>
+      2. Arrastrá los 5 archivos (index.html, manifest.json, sw.js, icon-192.png, icon-512.png)<br>
+      3. Click <strong>"Commit changes"</strong> (botón verde abajo)<br>
+      <div class="tip">
+        <strong>⚠️ Importante:</strong> el archivo HTML debe llamarse exactamente <code>index.html</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">4</div>
+  <div>
+    <div class="step-title">Activar GitHub Pages</div>
+    <div class="step-body">
+      1. En tu repo, ir a <strong>Settings</strong> (engranaje arriba a la derecha)<br>
+      2. En el menú izquierdo → <strong>"Pages"</strong><br>
+      3. En "Branch" seleccioná <strong>main</strong> → carpeta <strong>/ (root)</strong><br>
+      4. Click <strong>"Save"</strong><br>
+      5. Esperá 1-2 minutos. Aparecerá una URL tipo:<br>
+      <code>https://TU-USUARIO.github.io/gordini/</code><br><br>
+      Abrí esa URL en el celular para verificar que funciona ✅
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">5</div>
+  <div>
+    <div class="step-title">Generar el APK con PWABuilder</div>
+    <div class="step-body">
+      1. Ir a <strong><a href="https://www.pwabuilder.com" target="_blank">pwabuilder.com</a></strong><br>
+      2. Pegá la URL de GitHub Pages: <code>https://TU-USUARIO.github.io/gordini/</code><br>
+      3. Click <strong>"Start"</strong> — va a analizar la app<br>
+      4. Click <strong>"Package for stores"</strong><br>
+      5. Elegí <strong>Android</strong> → <strong>"Generate Package"</strong><br>
+      6. Descargás un <code>.zip</code> con el APK adentro<br><br>
+      <div class="tip">
+        <strong>💡 Tip:</strong> En "Android Options" podés poner el nombre de la app y tu email. Dejá todo lo demás por defecto.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">6</div>
+  <div>
+    <div class="step-title">Instalar el APK en tu celular</div>
+    <div class="step-body">
+      1. Pasá el <code>.apk</code> al celular (por WhatsApp, cable USB, o Google Drive)<br>
+      2. En el celular, abrí el archivo .apk<br>
+      3. Android va a pedir permiso para <strong>"Instalar aplicaciones desconocidas"</strong> → habilitalo<br>
+      4. Instalá → ¡ya aparece el ícono de Gordini en tu pantalla! ⚡<br><br>
+      <div class="tip">
+        <strong>✅ Funciona offline:</strong> una vez instalada, la app funciona sin internet. Los datos se guardan en el celular.
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<div class="tip" style="font-size:13px;">
+  <strong>⚡ Alternativa más rápida (sin APK):</strong><br>
+  En el celular, abrí la URL de GitHub Pages con Chrome → menú (3 puntitos) → <strong>"Agregar a pantalla de inicio"</strong>. Se instala como app en 10 segundos, sin APK ni pasos extra. Funciona igual.
+</div>
+
+</body>
+</html>
